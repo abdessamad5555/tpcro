@@ -1,41 +1,43 @@
-﻿using Basee.Data;
-using Basee.Mappers;
+﻿using Basee.Mappers;
+using Basee.Repositories.Interfaces;
 using Basee.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
-public class RegistrationsController : Controller
+namespace Basee.Controllers
 {
-    private readonly BaseeContext _context;
-
-    public RegistrationsController(BaseeContext context)
+    public class RegistrationsController : Controller
     {
-        _context = context;
-    }
+        private readonly IRegistrationRepository _repository;
 
-    // GET
-    public IActionResult Create()
-    {
-        return View();
-    }
-
-    // POST
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(registrationVM vm)
-    {
-        if (vm.password != vm.confpass)
+        public RegistrationsController(IRegistrationRepository repository)
         {
-            ModelState.AddModelError("confpass", "Les mots de passe ne correspondent pas");
-            return View(vm);
+            _repository = repository;
         }
 
-        if (!ModelState.IsValid)
-            return View(vm);
+        // GET
+        public IActionResult Create()
+        {
+            return View();
+        }
 
-        var entity = RegistrationMapper.ToEntity(vm);
-        _context.registration.Add(entity);
-        await _context.SaveChangesAsync();
+        // POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(registrationVM vm)
+        {
+            if (vm.password != vm.confpass)
+            {
+                ModelState.AddModelError("confpass", "Les mots de passe ne correspondent pas");
+                return View(vm);
+            }
 
-        return RedirectToAction("Index");
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var entity = RegistrationMapper.ToEntity(vm);
+            await _repository.AddAsync(entity);
+
+            return RedirectToAction("Index");
+        }
     }
 }

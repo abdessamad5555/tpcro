@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Basee.Data;
+using Basee.Repositories;
+using Basee.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddControllersWithViews();
 
@@ -13,8 +14,10 @@ builder.Services.AddDbContext<BaseeContext>(options =>
     )
 );
 
-var app = builder.Build();
+// 🔥 IMPORTANT
+builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
 
+var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -27,7 +30,6 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",
